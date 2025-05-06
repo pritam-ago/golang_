@@ -2,18 +2,20 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
-	"github.com/gorilla/mux"
+
+	"example.com/api/database"
 	"example.com/api/models"
 	"example.com/api/storage"
+	"github.com/gorilla/mux"
 )
-	
-// Get all books
-func GetBooks(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(storage.Books)
+
+func Home(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Welcome to the Book API")
 }
 
-// Get a single book
+
 func GetBook(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	for _, item := range storage.Books {
@@ -25,15 +27,28 @@ func GetBook(w http.ResponseWriter, r *http.Request) {
 	http.NotFound(w, r)
 }
 
-// Create a new book
 func CreateBook(w http.ResponseWriter, r *http.Request) {
 	var book models.Book
 	json.NewDecoder(r.Body).Decode(&book)
-	storage.Books = append(storage.Books, book)
+	result := database.DB.Create(&book)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
+		return
+	}
 	json.NewEncoder(w).Encode(book)
 }
 
-// Update a book
+func GetBooks(w http.ResponseWriter, r *http.Request) {
+	var books []models.Book
+	result := database.DB.Find(&books)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
+		return
+	}
+	json.NewEncoder(w).Encode(books)
+}
+
+
 func UpdateBook(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	for i, item := range storage.Books {
@@ -47,7 +62,6 @@ func UpdateBook(w http.ResponseWriter, r *http.Request) {
 	http.NotFound(w, r)
 }
 
-// Delete a book
 func DeleteBook(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	for i, item := range storage.Books {

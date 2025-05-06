@@ -3,12 +3,20 @@ package main
 import (
 	"log"
 	"net/http"
+	"github.com/joho/godotenv"
+	"example.com/api/database"
 	"example.com/api/routes"
 )
 
 func main() {
-	router := routes.SetupRoutes()
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
-	log.Println("Server running on http://localhost:8080")
+	database.Connect()
+
+	router := routes.SetupRoutes()
+	log.Println("Server running at http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
