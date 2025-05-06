@@ -2,34 +2,40 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"example.com/api/database"
 	"example.com/api/models"
-	"example.com/api/storage"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
-)
-
-func Home(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Welcome to the Book API")
-}
-
+)	
 
 func GetBook(w http.ResponseWriter, r *http.Request) {
+	var book models.Book
 	params := mux.Vars(r)
-	for _, item := range storage.Books {
-		if item.ID == params["id"] {
-			json.NewEncoder(w).Encode(item)
-			return
-		}
+	result := database.DB.Where("id = ?", params["id"]).First(&book)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusNotFound)
+		return
 	}
-	http.NotFound(w, r)
+	json.NewEncoder(w).Encode(book)
+	
 }
 
 func CreateBook(w http.ResponseWriter, r *http.Request) {
 	var book models.Book
-	json.NewDecoder(r.Body).Decode(&book)
+	err := json.NewDecoder(r.Body).Decode(&book)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if book.Title == "" || book.Author == "" || book.Year ==0 {
+		http.Error(w, "Title, Author and Year are required", http.StatusBadRequest)
+		return
+	}
+
+	book.ID = uuid.New().String()
 	result := database.DB.Create(&book)
 	if result.Error != nil {
 		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
@@ -48,28 +54,45 @@ func GetBooks(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(books)
 }
 
-
 func UpdateBook(w http.ResponseWriter, r *http.Request) {
+	var book models.Book
 	params := mux.Vars(r)
-	for i, item := range storage.Books {
-		if item.ID == params["id"] {
-			json.NewDecoder(r.Body).Decode(&storage.Books[i])
-			storage.Books[i].ID = params["id"] // ensure ID stays same
-			json.NewEncoder(w).Encode(storage.Books[i])
-			return
-		}
+	result := database.DB.Where("id = ?", params["id"]).First(&book)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusNotFound)
+		return
 	}
-	http.NotFound(w, r)
+	
+	err := json.NewDecoder(r.Body).Decode(&book)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	
+	result = database.DB.Save(&book)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
+		return
+	}
+	json.NewEncoder(w).Encode(book)
+	
+	
 }
 
 func DeleteBook(w http.ResponseWriter, r *http.Request) {
+	var book models.Book
 	params := mux.Vars(r)
-	for i, item := range storage.Books {
-		if item.ID == params["id"] {
-			storage.Books = append(storage.Books[:i], storage.Books[i+1:]...)
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
+	result := database.DB.Where("id = ?", params["id"]).First(&book)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusNotFound)
+		return
 	}
-	http.NotFound(w, r)
+
+	result = database.DB.Delete(&book)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
+		return
+	}
+	json.NewEncoder(w).Encode(map[string]string{"message": "Book deleted successfully"})
+	
 }

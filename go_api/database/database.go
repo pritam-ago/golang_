@@ -5,9 +5,10 @@ import (
 	"log"
 	"os"
 
+	"example.com/api/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"example.com/api/models"
+	"gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
@@ -24,7 +25,9 @@ func Connect() {
 	)
 
 	var err error
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	})
 	if err != nil {
 		log.Fatal("Failed to connect to DB:", err)
 	}
