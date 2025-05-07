@@ -11,6 +11,6 @@ func SetupRoutes() http.Handler {
 	
 	HomeRoutes(router)
 	BookRoutes(router)
-
+	AuthRoutes(router)
 	return router
 }

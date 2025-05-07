@@ -32,7 +32,7 @@ func Connect() {
 		log.Fatal("Failed to connect to DB:", err)
 	}
 
-	err = DB.AutoMigrate(&models.Book{})
+	err = DB.AutoMigrate(&models.Book{}, &models.User{})
 	if err != nil {
 		log.Fatal("Migration failed:", err)
 	}
