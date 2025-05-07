@@ -45,7 +45,7 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-			// Add claims to request context
+			
 			ctx := r.Context()
 			ctx = context.WithValue(ctx, UserIDKey, claims["user_id"])
 			ctx = context.WithValue(ctx, UsernameKey, claims["username"])

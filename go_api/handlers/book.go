@@ -35,7 +35,6 @@ func CreateBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get user ID from context
 	userID, ok := r.Context().Value(middleware.UserIDKey).(string)
 	if !ok || userID == "" {
 		http.Error(w, "User not authenticated", http.StatusUnauthorized)
@@ -72,7 +71,6 @@ func UpdateBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Verify ownership
 	userID, ok := r.Context().Value(middleware.UserIDKey).(string)
 	if !ok || userID == "" {
 		http.Error(w, "User not authenticated", http.StatusUnauthorized)
@@ -107,7 +105,6 @@ func DeleteBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Verify ownership
 	userID, ok := r.Context().Value(middleware.UserIDKey).(string)
 	if !ok || userID == "" {
 		http.Error(w, "User not authenticated", http.StatusUnauthorized)

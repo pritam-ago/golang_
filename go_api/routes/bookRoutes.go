@@ -8,11 +8,9 @@ import (
 )
 
 func BookRoutes(router *mux.Router) {
-	// Public routes
 	router.HandleFunc("/books", handlers.GetBooks).Methods("GET")
 	router.HandleFunc("/books/{id}", handlers.GetBook).Methods("GET")
 
-	// Protected routes - only sellers can create/update/delete books
 	router.HandleFunc("/books",
 		middleware.AuthMiddleware(
 			middleware.RequireRole(models.RoleSeller)(

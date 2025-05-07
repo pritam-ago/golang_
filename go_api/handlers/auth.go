@@ -21,13 +21,11 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate required fields
 	if user.Username == "" || user.Password == "" {
 		http.Error(w, "Username and password are required", http.StatusBadRequest)
 		return
 	}
 
-	// Check if username already exists
 	result := database.DB.Where("username = ?", user.Username).First(&user)
 	if result.Error == nil {
 		http.Error(w, "Username already exists", http.StatusBadRequest)
@@ -48,7 +46,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Don't send password back in response
 	user.Password = ""
 	json.NewEncoder(w).Encode(user)
 }
@@ -64,7 +61,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate required fields
 	if loginRequest.Username == "" || loginRequest.Password == "" {
 		http.Error(w, "Username and password are required", http.StatusBadRequest)
 		return
