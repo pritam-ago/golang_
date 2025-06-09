@@ -16,6 +16,7 @@ func BookRoutes(router *mux.Router) {
 			middleware.RequireRole(models.RoleSeller)(
 				handlers.CreateBook,
 			),
+			
 		),
 	).Methods("POST")
 
